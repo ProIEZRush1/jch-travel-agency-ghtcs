@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'agentcars' => [
+        'base_url' => env('AGENTCARS_BASE_URL', 'https://subsite.agentcars.com'),
+        'agency' => env('AGENTCARS_AGENCY', 'archer-operadora'),
+    ],
+
 ];

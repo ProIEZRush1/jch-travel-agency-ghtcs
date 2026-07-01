@@ -23,6 +23,11 @@ Route::get('/health', function () {
     }
 });
 
+// Público — meta-buscador de autos JCH (sin login), consulta AgentCars en vivo.
+Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
+Route::get('/autos/sugerencias', [AutoController::class, 'sugerencias'])->name('autos.sugerencias');
+Route::get('/autos/buscar', [AutoController::class, 'buscar'])->name('autos.buscar');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard', [
         'stats' => [
@@ -37,7 +42,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/conectar', [WhatsAppController::class, 'conectar'])->name('conectar');
 
-    Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
+    Route::get('/autos/historial', [AutoController::class, 'historial'])->name('autos.historial');
     Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
 
     Route::resource('paquetes', PaqueteController::class);
