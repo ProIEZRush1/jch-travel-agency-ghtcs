@@ -32,5 +32,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="TRIAL_LOCKED" value="false" force="true"/>
+        <env name="APP_ENV" value="testing" force="true"/>
     </php>
 </phpunit>

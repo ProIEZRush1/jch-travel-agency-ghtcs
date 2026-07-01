@@ -34,9 +34,9 @@ const submit = () => {
         <Head title="Iniciar sesión" />
 
         <div class="mb-6 text-center">
-            <h1 class="text-2xl font-bold text-slate-900">Bienvenido de nuevo</h1>
+            <h1 class="text-2xl font-bold text-slate-900">Bienvenido a JCH Travel Agency</h1>
             <p class="mt-1 text-sm text-slate-500">
-                Inicia sesión para acceder a tu panel
+                Inicia sesión para administrar tu agencia de viajes
             </p>
         </div>
 
@@ -90,7 +90,7 @@ const submit = () => {
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm font-medium text-[#7c3aed] underline-offset-2 hover:text-[#c026d3] hover:underline focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2"
+                    class="rounded-md text-sm font-medium text-[#0071c2] underline-offset-2 hover:text-[#003580] hover:underline focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                 >
                     Olvidaste tu contraseña
                 </Link>
@@ -109,7 +109,7 @@ const submit = () => {
             ¿No tienes una cuenta?
             <Link
                 :href="route('register')"
-                class="font-semibold text-[#7c3aed] hover:text-[#c026d3]"
+                class="font-semibold text-[#0071c2] hover:text-[#003580]"
             >
                 Crear cuenta
             </Link>

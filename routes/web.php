@@ -1,16 +1,20 @@
 <?php
 
+use App\Http\Controllers\AutoController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\HotelController;
+use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WhatsAppController;
-use Illuminate\Foundation\Application;
+use App\Models\Cliente;
+use App\Models\Pedido;
+use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Admin/bot panel: the root goes straight to the panel (login if needed), never a generic page.
 Route::get('/', fn () => redirect()->route('dashboard'));
 
-// Lightweight health probe the deploy pipeline hits to verify the LIVE app + database are up,
-// migrations ran and the admin was seeded (users >= 1). Public on purpose.
 Route::get('/health', function () {
     try {
         return response()->json(['ok' => true, 'users' => \App\Models\User::count()]);
@@ -20,11 +24,25 @@ Route::get('/health', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard', [
+        'stats' => [
+            'clientes'    => Cliente::count(),
+            'cotizaciones' => Pedido::whereMonth('created_at', now()->month)->count(),
+            'confirmadas' => Pedido::where('estado', 'confirmado')->whereMonth('created_at', now()->month)->count(),
+            'servicios'   => Plan::where('activo', true)->count(),
+        ],
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/conectar', [WhatsAppController::class, 'conectar'])->name('conectar');
+
+    Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
+    Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
+
+    Route::resource('paquetes', PaqueteController::class);
+    Route::resource('clientes', ClienteController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('cotizaciones', CotizacionController::class)->only(['index', 'show', 'update', 'destroy']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
