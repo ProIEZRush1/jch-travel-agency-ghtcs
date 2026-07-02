@@ -1,5 +1,5 @@
-Arreglamos el buscador de "Lugar de recogida" en la página de Autos: ahora sí muestra sugerencias para CUALQUIER lugar (países, ciudades o aeropuertos), no solo aeropuertos grandes. Por ejemplo, si escribes "Ecuador" te sugiere Quito y Guayaquil; antes no aparecía nada y el botón "Buscar autos" quedaba bloqueado.
+Arreglamos "Hoteles": ya no pide iniciar sesión, se abre libre para cualquier visitante igual que "Autos". Además, ahora tiene su propio buscador con tu marca JCH (destino, fechas y número de personas) que muestra hoteles reales con precio de agente vs. precio público, sin ningún logo de Expedia.
 
-Cómo verlo: entra a la página pública "/autos", escribe el nombre de un país o ciudad (ej. "Ecuador", "Madrid", "Bogotá") en "Lugar de recogida", elige una de las sugerencias que aparecen, completa fechas y presiona "Buscar autos" — ya funciona sin trabarse.
+Cómo verlo: entra a la página pública "/hoteles" (o da clic en "🏨 Hoteles" desde el menú de la página de Autos, y viceversa con "🚗 Autos" desde Hoteles). Escribe un destino como "Cancún", elige fechas y número de adultos, y presiona "Buscar hoteles" para ver los resultados con tu ahorro destacado.
 
-Para revisar el historial de búsquedas de tus clientes: inicia sesión en el panel → menú "Búsquedas de Autos" (junto a "Renta de Autos" en el menú lateral).
+Nota: vuelos y paquetes siguen entrando por tu portal Expedia TAAP (como se acordó), solo Hoteles y Autos ya tienen buscador propio dentro del sitio.

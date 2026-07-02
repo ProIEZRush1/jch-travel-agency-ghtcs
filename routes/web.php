@@ -28,6 +28,11 @@ Route::get('/autos', [AutoController::class, 'index'])->name('autos.index');
 Route::get('/autos/sugerencias', [AutoController::class, 'sugerencias'])->name('autos.sugerencias');
 Route::get('/autos/buscar', [AutoController::class, 'buscar'])->name('autos.buscar');
 
+// Público — buscador de hoteles JCH (sin login), igual que /autos.
+Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
+Route::get('/hoteles/sugerencias', [HotelController::class, 'sugerencias'])->name('hoteles.sugerencias');
+Route::get('/hoteles/buscar', [HotelController::class, 'buscar'])->name('hoteles.buscar');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard', [
         'stats' => [
@@ -43,7 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/conectar', [WhatsAppController::class, 'conectar'])->name('conectar');
 
     Route::get('/autos/historial', [AutoController::class, 'historial'])->name('autos.historial');
-    Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
 
     Route::resource('paquetes', PaqueteController::class);
     Route::resource('clientes', ClienteController::class)->only(['index', 'show', 'destroy']);

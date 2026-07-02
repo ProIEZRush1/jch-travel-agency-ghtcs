@@ -182,6 +182,9 @@ function swapDropoff() {
                     <span class="flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-teal-700">
                         🚗 Renta de Autos
                     </span>
+                    <a href="/hoteles" class="flex items-center gap-1.5 text-slate-600 hover:text-teal-700">
+                        🏨 Hoteles
+                    </a>
                     <a :href="waLink" target="_blank" rel="noopener" class="flex items-center gap-1.5 text-slate-600 hover:text-teal-700">
                         💬 Contáctanos por WhatsApp
                     </a>
