@@ -40,4 +40,10 @@ return [
         'agency' => env('AGENTCARS_AGENCY', 'archer-operadora'),
     ],
 
+    'expedia_taap' => [
+        'url' => env('EXPEDIA_TAAP_URL', 'https://www.expediataap.mx'),
+        'user' => env('EXPEDIA_TAAP_USER'),
+        'pass' => env('EXPEDIA_TAAP_PASS'),
+    ],
+
 ];

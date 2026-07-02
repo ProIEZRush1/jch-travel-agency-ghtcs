@@ -22,7 +22,6 @@ const minCheckin = addDays(today, 1);
 
 const destinoQuery = ref('');
 const destinoSuggestions = ref([]);
-const destinoSelected = ref(null);
 const destinoLoading = ref(false);
 
 const checkin = ref(minCheckin);
@@ -46,7 +45,6 @@ async function fetchSugerencias(query) {
 }
 
 function onDestinoInput() {
-    destinoSelected.value = null;
     clearTimeout(destinoTimer);
     const q = destinoQuery.value.trim();
     if (q.length < 2) {
@@ -61,13 +59,12 @@ function onDestinoInput() {
 }
 
 function selectDestino(s) {
-    destinoSelected.value = s;
     destinoQuery.value = s.nombre;
     destinoSuggestions.value = [];
 }
 
 const canSearch = computed(() => {
-    return !!destinoSelected.value && checkin.value && checkout.value && adultos.value >= 1;
+    return destinoQuery.value.trim().length >= 2 && checkin.value && checkout.value && adultos.value >= 1;
 });
 
 async function buscar() {
@@ -76,24 +73,24 @@ async function buscar() {
     searched.value = true;
     errorMsg.value = '';
     results.value = [];
+    destinoSuggestions.value = [];
 
     try {
         const params = new URLSearchParams({
-            destino: destinoSelected.value.codigo,
+            destino: destinoQuery.value.trim(),
             checkin: checkin.value,
             checkout: checkout.value,
             adultos: adultos.value,
         });
         const res = await fetch(`/hoteles/buscar?${params.toString()}`);
         const data = await res.json();
+
         if (data.success && data.hoteles?.length) {
             results.value = data.hoteles;
             noches.value = data.noches;
             destinoResultado.value = data.destino;
-        } else if (data.success) {
-            errorMsg.value = 'No encontramos hoteles disponibles para ese destino y fechas. Intenta con otra búsqueda.';
         } else {
-            errorMsg.value = 'No pudimos completar la búsqueda en este momento. Intenta de nuevo en unos minutos.';
+            errorMsg.value = data.message || 'Estamos consultando tarifas en vivo con tu proveedor, intenta de nuevo en un momento.';
         }
     } catch (e) {
         errorMsg.value = 'Ocurrió un error al buscar. Intenta de nuevo.';
@@ -105,22 +102,21 @@ async function buscar() {
 const filteredResults = computed(() => {
     const list = [...results.value];
     if (sortBy.value === 'precio') {
-        list.sort((a, b) => a.precio_total - b.precio_total);
+        list.sort((a, b) => (a.precio_total_valor ?? Infinity) - (b.precio_total_valor ?? Infinity));
     } else if (sortBy.value === 'estrellas') {
-        list.sort((a, b) => b.estrellas - a.estrellas);
-    } else if (sortBy.value === 'ahorro') {
-        list.sort((a, b) => b.ahorro_pct - a.ahorro_pct);
+        list.sort((a, b) => (b.estrellas ?? 0) - (a.estrellas ?? 0));
     }
     return list;
 });
 
-function money(n) {
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n);
+function whatsappReserva(h) {
+    const precio = h.precio_total_texto ? ` — ${h.precio_total_texto}` : '';
+    const msg = `Hola, me interesa reservar ${h.nombre} en ${destinoResultado.value} — ${noches.value} noche(s), ${adultos.value} adulto(s)${precio}.`;
+    return `${waLink}?text=${encodeURIComponent(msg)}`;
 }
 
-function whatsappReserva(h) {
-    const msg = `Hola, me interesa reservar ${h.nombre} en ${destinoResultado.value} — ${noches.value} noche(s), ${adultos.value} adulto(s).`;
-    return `${waLink}?text=${encodeURIComponent(msg)}`;
+function onImgError(e) {
+    e.target.style.display = 'none';
 }
 </script>
 
@@ -153,7 +149,7 @@ function whatsappReserva(h) {
             <div class="mx-auto max-w-6xl">
                 <p class="text-sm font-semibold uppercase tracking-wide text-teal-300">JCH Travel Agency</p>
                 <h1 class="mt-1 text-2xl font-bold sm:text-3xl">Encuentra el mejor hotel para tu viaje</h1>
-                <p class="mt-1 text-sm text-blue-100">Comparamos tarifa de agente contra la tarifa pública — tú ves el precio, tu cliente el ahorro.</p>
+                <p class="mt-1 text-sm text-blue-100">Tarifas de agente en vivo, consultadas directo desde tu portal Expedia TAAP.</p>
 
                 <!-- Search card -->
                 <div class="mt-6 rounded-2xl bg-white p-4 text-slate-800 shadow-xl sm:p-6">
@@ -178,7 +174,7 @@ function whatsappReserva(h) {
                                 <div v-if="destinoLoading" class="px-3 py-2 text-sm text-slate-400">Buscando…</div>
                                 <button
                                     v-for="s in destinoSuggestions"
-                                    :key="s.codigo"
+                                    :key="s.nombre"
                                     type="button"
                                     @click="selectDestino(s)"
                                     class="block w-full px-3 py-2 text-left text-sm hover:bg-teal-50"
@@ -210,14 +206,14 @@ function whatsappReserva(h) {
                     </div>
 
                     <div class="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                        <p class="text-xs text-slate-500">✅ Mostramos tarifa de agente vs. tarifa pública para que veas tu margen al instante.</p>
+                        <p class="text-xs text-slate-500">✅ Tarifas de agente reales, consultadas en vivo en cada búsqueda — nunca precios de catálogo.</p>
                         <button
                             type="button"
                             @click="buscar"
                             :disabled="!canSearch || loading"
                             class="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-600 px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                         >
-                            <span v-if="loading">Buscando…</span>
+                            <span v-if="loading">Consultando…</span>
                             <span v-else>🔎 Buscar hoteles</span>
                         </button>
                     </div>
@@ -229,16 +225,26 @@ function whatsappReserva(h) {
         <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
             <div v-if="!searched" class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
                 <p class="text-4xl">🏨</p>
-                <p class="mt-2 font-medium">Elige destino, fechas y número de adultos para ver tarifas de agente vs. tarifa pública.</p>
+                <p class="mt-2 font-medium">Elige destino, fechas y número de adultos para ver tarifas de agente en vivo desde tu portal Expedia TAAP.</p>
             </div>
 
             <div v-else-if="loading" class="rounded-xl border border-slate-200 bg-white p-10 text-center text-slate-500">
                 <p class="text-3xl">⏳</p>
-                <p class="mt-2 font-medium">Comparando tarifas de hoteles…</p>
+                <p class="mt-2 font-medium">Estamos consultando tarifas en vivo con tu proveedor Expedia TAAP…</p>
+                <p class="mt-1 text-xs text-slate-400">Esto puede tardar unos segundos porque iniciamos sesión y buscamos en tiempo real.</p>
             </div>
 
-            <div v-else-if="errorMsg" class="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-red-700">
-                {{ errorMsg }}
+            <div v-else-if="errorMsg" class="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center text-amber-800">
+                <p class="text-3xl">🔄</p>
+                <p class="mt-2 font-medium">{{ errorMsg }}</p>
+                <a
+                    :href="waLink"
+                    target="_blank"
+                    rel="noopener"
+                    class="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#003580] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#00285f]"
+                >
+                    💬 Cotizar por WhatsApp mientras tanto
+                </a>
             </div>
 
             <div v-else>
@@ -247,7 +253,6 @@ function whatsappReserva(h) {
                     <select v-model="sortBy" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                         <option value="precio">Ordenar: menor precio</option>
                         <option value="estrellas">Ordenar: categoría</option>
-                        <option value="ahorro">Ordenar: mayor ahorro</option>
                     </select>
                 </div>
 
@@ -257,29 +262,32 @@ function whatsappReserva(h) {
                         :key="i"
                         class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
                     >
-                        <div class="flex h-24 items-center justify-center bg-gradient-to-br from-[#003580] to-teal-600 p-3 text-white">
-                            <span class="text-4xl">🏨</span>
+                        <div class="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[#003580] to-teal-600 p-3 text-white">
+                            <img
+                                v-if="h.imagen"
+                                :src="h.imagen"
+                                :alt="h.nombre"
+                                @error="onImgError"
+                                class="absolute inset-0 h-full w-full object-cover"
+                            />
+                            <span class="relative text-4xl">🏨</span>
                         </div>
                         <div class="flex flex-1 flex-col p-4">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                                <span v-for="s in h.estrellas" :key="s">⭐</span> · {{ h.zona }}
+                            <p v-if="h.estrellas" class="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                                <span v-for="s in Math.round(h.estrellas)" :key="s">⭐</span>
                             </p>
                             <p class="mt-0.5 font-semibold text-slate-800">{{ h.nombre }}</p>
 
-                            <div class="mt-3 flex flex-wrap gap-1.5">
-                                <span v-for="a in h.amenidades" :key="a" class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{{ a }}</span>
-                            </div>
-
-                            <div class="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700">
-                                💰 Ahorras {{ h.ahorro_pct }}% vs. tarifa pública
+                            <div v-if="h.plan_alimentos" class="mt-3">
+                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{{ h.plan_alimentos }}</span>
                             </div>
 
                             <div class="mt-auto pt-4">
-                                <div class="flex items-end justify-between">
+                                <div class="flex items-end justify-between gap-2">
                                     <div>
-                                        <p class="text-xs text-slate-400 line-through">{{ money(h.precio_normal_total) }}</p>
-                                        <p class="text-xs text-slate-400">Total ({{ h.noches }} noches, tarifa de agente)</p>
-                                        <p class="text-xl font-bold text-slate-900">{{ money(h.precio_total) }}</p>
+                                        <p v-if="h.precio_noche_texto" class="text-xs text-slate-400">{{ h.precio_noche_texto }} / noche</p>
+                                        <p class="text-xs text-slate-400">Total ({{ noches }} noches, tarifa de agente TAAP)</p>
+                                        <p class="text-xl font-bold text-slate-900">{{ h.precio_total_texto || 'Consulta precio' }}</p>
                                     </div>
                                     <a
                                         :href="whatsappReserva(h)"

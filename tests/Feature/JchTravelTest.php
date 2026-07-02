@@ -308,13 +308,16 @@ class JchTravelTest extends TestCase
              ->assertInertia(fn ($page) => $page->component('Hoteles/Index'));
     }
 
-    public function test_hoteles_buscar_is_public_and_returns_real_hotels(): void
+    public function test_hoteles_buscar_is_public_and_never_returns_mock_hotels(): void
     {
-        $this->getJson('/hoteles/buscar?destino=cancun&checkin=' . now()->addDays(31)->toDateString() . '&checkout=' . now()->addDays(34)->toDateString() . '&adultos=2')
+        // No EXPEDIA_TAAP_USER/PASS is configured in tests, so ExpediaTaapClient must report an
+        // honest "unavailable" status instead of ever inventing hotels or prices.
+        $this->getJson('/hoteles/buscar?destino=Cancún&checkin=' . now()->addDays(31)->toDateString() . '&checkout=' . now()->addDays(34)->toDateString() . '&adultos=2')
              ->assertOk()
-             ->assertJsonPath('success', true)
-             ->assertJsonPath('destino', 'Cancún')
-             ->assertJsonCount(5, 'hoteles');
+             ->assertJsonPath('success', false)
+             ->assertJsonPath('status', 'unavailable')
+             ->assertJsonCount(0, 'hoteles')
+             ->assertJsonStructure(['message']);
     }
 
     // ── Anti-generic branding ────────────────────────────────────────────────

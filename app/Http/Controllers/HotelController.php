@@ -2,12 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\HotelCatalog;
+use App\Services\ExpediaTaapClient;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class HotelController extends Controller
 {
+    /**
+     * Solo nombres de destino para acelerar el autocompletado del buscador — NINGÚN hotel ni
+     * tarifa vive aquí. Los hoteles y precios que ve el cliente siempre vienen 100% en vivo del
+     * scraping de ExpediaTaapClient contra el portal real de TAAP.
+     *
+     * @var array<int, string>
+     */
+    private const DESTINOS_SUGERIDOS = [
+        'Cancún', 'Playa del Carmen', 'Tulum', 'Cozumel', 'Isla Mujeres',
+        'Los Cabos', 'La Paz', 'Puerto Vallarta', 'Riviera Nayarit', 'Mazatlán',
+        'Ciudad de México', 'Guadalajara', 'Monterrey', 'Querétaro', 'San Miguel de Allende',
+        'Oaxaca', 'Puebla', 'Mérida', 'Huatulco', 'Acapulco', 'Ixtapa Zihuatanejo',
+        'Miami', 'Orlando', 'Las Vegas', 'Nueva York', 'Los Ángeles',
+        'Madrid', 'Barcelona', 'París', 'Roma', 'Punta Cana',
+    ];
+
     public function index()
     {
         return Inertia::render('Hoteles/Index');
@@ -21,49 +37,47 @@ class HotelController extends Controller
             return response()->json([]);
         }
 
-        return response()->json(HotelCatalog::sugerir($q));
+        $qNormalizado = $this->normalizar($q);
+
+        $sugerencias = array_values(array_filter(
+            self::DESTINOS_SUGERIDOS,
+            fn (string $destino) => str_contains($this->normalizar($destino), $qNormalizado)
+        ));
+
+        return response()->json(array_map(fn (string $nombre) => ['nombre' => $nombre], array_slice($sugerencias, 0, 8)));
     }
 
-    public function buscar(Request $request)
+    public function buscar(Request $request, ExpediaTaapClient $client)
     {
         $data = $request->validate([
-            'destino' => ['required', 'string'],
-            'checkin' => ['required', 'date'],
+            'destino' => ['required', 'string', 'max:120'],
+            'checkin' => ['required', 'date', 'after_or_equal:today'],
             'checkout' => ['required', 'date', 'after:checkin'],
             'adultos' => ['required', 'integer', 'min:1', 'max:10'],
         ]);
 
-        $destino = HotelCatalog::destino($data['destino']);
-
-        if (! $destino) {
-            return response()->json(['success' => false, 'hoteles' => []]);
-        }
-
         $noches = (new \DateTime($data['checkin']))->diff(new \DateTime($data['checkout']))->days;
         $noches = max(1, $noches);
 
-        $hoteles = array_map(function (array $h) use ($noches) {
-            $totalAgente = $h['tarifa_agente'] * $noches;
-            $totalNormal = $h['tarifa_normal'] * $noches;
-
-            return array_merge($h, [
-                'moneda' => 'MXN',
-                'noches' => $noches,
-                'precio_total' => $totalAgente,
-                'precio_normal_total' => $totalNormal,
-                'ahorro' => $totalNormal - $totalAgente,
-                'ahorro_pct' => $totalNormal > 0 ? round((($totalNormal - $totalAgente) / $totalNormal) * 100) : 0,
-            ]);
-        }, $destino['hoteles']);
-
-        usort($hoteles, fn ($a, $b) => $a['precio_total'] <=> $b['precio_total']);
+        $resultado = $client->searchHotels($data['destino'], $data['checkin'], $data['checkout'], (int) $data['adultos']);
 
         return response()->json([
-            'success' => true,
-            'destino' => $destino['nombre'],
+            'success' => $resultado['success'],
+            'status' => $resultado['status'],
+            'message' => $resultado['message'],
+            'destino' => $data['destino'],
             'noches' => $noches,
             'adultos' => (int) $data['adultos'],
-            'hoteles' => $hoteles,
+            'hoteles' => $resultado['hoteles'],
+        ]);
+    }
+
+    private function normalizar(string $texto): string
+    {
+        $texto = mb_strtolower(trim($texto));
+
+        return strtr($texto, [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ñ' => 'n',
         ]);
     }
 }

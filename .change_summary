@@ -1,5 +1,5 @@
-Arreglamos "Hoteles": ya no pide iniciar sesión, se abre libre para cualquier visitante igual que "Autos". Además, ahora tiene su propio buscador con tu marca JCH (destino, fechas y número de personas) que muestra hoteles reales con precio de agente vs. precio público, sin ningún logo de Expedia.
+Hoteles ahora consulta EN VIVO tu cuenta de Expedia TAAP en cada búsqueda: nombres, precios e imágenes reales, nunca inventados (ya quitamos el catálogo de precios de prueba que tenía antes).
 
-Cómo verlo: entra a la página pública "/hoteles" (o da clic en "🏨 Hoteles" desde el menú de la página de Autos, y viceversa con "🚗 Autos" desde Hoteles). Escribe un destino como "Cancún", elige fechas y número de adultos, y presiona "Buscar hoteles" para ver los resultados con tu ahorro destacado.
+Cómo verlo: entra a "/hoteles" (menú "🏨 Hoteles"), escribe un destino, fechas y adultos, y presiona "Buscar hoteles". Para que muestre resultados reales necesitamos tu usuario y contraseña de expediataap.mx — en cuanto nos los compartas los conectamos de forma segura al servidor. Mientras tanto, la página es honesta: dice "Estamos consultando tarifas en vivo, intenta de nuevo en un momento" en lugar de mostrar precios falsos.
 
-Nota: vuelos y paquetes siguen entrando por tu portal Expedia TAAP (como se acordó), solo Hoteles y Autos ya tienen buscador propio dentro del sitio.
+Autos y el acceso a vuelos/paquetes por tu portal Expedia TAAP siguen igual que antes.

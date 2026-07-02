@@ -11,7 +11,7 @@ cd /app || exit 1
 #     php.ini whose variables_order may exclude 'E', so $_ENV is empty and Dotenv falls back to the
 #     .env defaults (DB_CONNECTION=sqlite) — making WEB requests hit an empty sqlite while the CLI uses
 #     the real Postgres. Writing the real values into .env makes both agree.
-for V in DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD APP_URL ASSET_URL APP_NAME APP_ENV; do
+for V in DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD APP_URL ASSET_URL APP_NAME APP_ENV EXPEDIA_TAAP_URL EXPEDIA_TAAP_USER EXPEDIA_TAAP_PASS; do
     eval "VAL=\${$V}"
     [ -n "$VAL" ] || continue
     if grep -q "^$V=" .env; then
@@ -43,9 +43,10 @@ mkdir -p "$DB_DIR" 2>/dev/null || true
 [ -f "$DB_DATABASE" ] || touch "$DB_DATABASE" 2>/dev/null || true
 
 # Make runtime dirs writable (best effort). storage/wa holds the single WhatsApp session
-# creds — persist /app/storage (or /app/storage/wa) as a volume to survive redeploys.
+# creds; storage/app/private holds the cached Expedia TAAP login session — persist /app/storage
+# as a volume to survive redeploys.
 mkdir -p storage/framework/cache storage/framework/sessions \
-         storage/framework/views storage/logs storage/wa bootstrap/cache 2>/dev/null || true
+         storage/framework/views storage/logs storage/wa storage/app/private bootstrap/cache 2>/dev/null || true
 mkdir -p /app/storage/wa 2>/dev/null || true
 chmod -R ug+rwX storage bootstrap/cache "$DB_DIR" 2>/dev/null || true
 
