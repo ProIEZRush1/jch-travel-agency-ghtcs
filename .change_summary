@@ -1,5 +1,5 @@
-Ahora tu sitio tiene su propio buscador de autos con tu marca JCH — ya no se ve el iframe ni el logo de AgentCars, solo tus resultados con precios reales de Dollar, Thrifty, Hertz y demás compañías, todas con Protección Total incluida.
+Arreglamos el buscador de "Lugar de recogida" en la página de Autos: ahora sí muestra sugerencias para CUALQUIER lugar (países, ciudades o aeropuertos), no solo aeropuertos grandes. Por ejemplo, si escribes "Ecuador" te sugiere Quito y Guayaquil; antes no aparecía nada y el botón "Buscar autos" quedaba bloqueado.
 
-Cómo verlo: entra a la página pública "/autos" (el buscador que usarán tus clientes, sin necesidad de iniciar sesión), escribe una ciudad o aeropuerto, elige fechas y presiona "Buscar autos".
+Cómo verlo: entra a la página pública "/autos", escribe el nombre de un país o ciudad (ej. "Ecuador", "Madrid", "Bogotá") en "Lugar de recogida", elige una de las sugerencias que aparecen, completa fechas y presiona "Buscar autos" — ya funciona sin trabarse.
 
 Para revisar el historial de búsquedas de tus clientes: inicia sesión en el panel → menú "Búsquedas de Autos" (junto a "Renta de Autos" en el menú lateral).

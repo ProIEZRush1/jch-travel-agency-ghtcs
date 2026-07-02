@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Pool;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +16,57 @@ use Illuminate\Support\Facades\Log;
 class AgentCarsClient
 {
     private const FULL_PROTECTION_ALIAS = 'Full Protection';
+
+    /**
+     * AgentCars' /api/suggest only returns "airport" entries for terms that
+     * match an airport/city name directly. A country name (e.g. "Ecuador")
+     * only comes back as a "country" entry with no airports at all, which
+     * left pickup-place autocomplete empty and the search button disabled.
+     * When AgentCars tags the query as a recognized country, we fan out to
+     * its principal cities/airports (by ISO-3166-1 alpha-2 code) so the
+     * country search still surfaces real, bookable pickup locations.
+     *
+     * @var array<string, array<int, string>>
+     */
+    private const COUNTRY_AIRPORT_TERMS = [
+        'MX' => ['Ciudad de México', 'Cancún', 'Guadalajara', 'Monterrey', 'Puerto Vallarta', 'Los Cabos'],
+        'US' => ['Miami', 'Los Ángeles', 'Nueva York', 'Orlando', 'Las Vegas'],
+        'CA' => ['Toronto', 'Vancouver', 'Montreal'],
+        'EC' => ['Quito', 'Guayaquil', 'Cuenca'],
+        'CO' => ['Bogotá', 'Medellín', 'Cartagena'],
+        'PE' => ['Lima', 'Cusco'],
+        'AR' => ['Buenos Aires', 'Córdoba', 'Mendoza'],
+        'CL' => ['Santiago'],
+        'BR' => ['São Paulo', 'Río de Janeiro'],
+        'BO' => ['La Paz', 'Santa Cruz de la Sierra'],
+        'PY' => ['Asunción'],
+        'UY' => ['Montevideo'],
+        'VE' => ['Caracas'],
+        'PA' => ['Ciudad de Panamá'],
+        'CR' => ['San José'],
+        'GT' => ['Ciudad de Guatemala'],
+        'HN' => ['Tegucigalpa', 'San Pedro Sula'],
+        'SV' => ['San Salvador'],
+        'NI' => ['Managua'],
+        'CU' => ['La Habana', 'Varadero'],
+        'DO' => ['Punta Cana', 'Santo Domingo'],
+        'PR' => ['San Juan'],
+        'BZ' => ['Belize City'],
+        'ES' => ['Madrid', 'Barcelona'],
+        'FR' => ['París'],
+        'IT' => ['Roma', 'Milán'],
+        'DE' => ['Fráncfort', 'Múnich'],
+        'GB' => ['Londres'],
+        'PT' => ['Lisboa'],
+        'NL' => ['Ámsterdam'],
+        'CH' => ['Zúrich'],
+        'GR' => ['Atenas'],
+        'JP' => ['Tokio'],
+        'CN' => ['Pekín', 'Shanghái'],
+        'AW' => ['Aruba'],
+        'BS' => ['Nassau'],
+        'JM' => ['Kingston', 'Montego Bay'],
+    ];
 
     private string $baseUrl;
     private string $agency;
@@ -28,33 +81,120 @@ class AgentCarsClient
     public function suggest(string $query): array
     {
         try {
-            $res = Http::timeout(10)->get("{$this->baseUrl}/api/suggest", [
-                'q' => $query,
-                'locale' => 'es',
-                'type' => 'cars',
-            ]);
+            $raw = $this->fetchRaw($query);
 
-            if (! $res->successful()) {
+            if ($raw === null) {
                 return [];
             }
 
-            $airports = $res->json('airport') ?? [];
+            $airports = $this->extractAirports($raw);
+            $extraTerms = $this->extraTermsFor($raw);
 
-            return collect($airports)
-                ->filter(fn ($a) => filled($a['airport_code'] ?? null))
-                ->map(fn ($a) => [
-                    'code' => $a['airport_code'],
-                    'name' => $a['name'],
-                    'lat' => $a['lat'],
-                    'lng' => $a['lng'],
-                ])
-                ->values()
-                ->all();
+            if ($extraTerms !== []) {
+                $responses = Http::pool(fn (Pool $pool) => collect($extraTerms)
+                    ->map(fn ($term) => $pool->timeout(8)->get("{$this->baseUrl}/api/suggest", [
+                        'q' => $term,
+                        'locale' => 'es',
+                        'type' => 'cars',
+                    ]))
+                    ->all());
+
+                foreach ($responses as $res) {
+                    if (! $res instanceof Response || ! $res->successful()) {
+                        continue;
+                    }
+
+                    foreach ($this->extractAirports($res->json() ?? []) as $code => $airport) {
+                        $airports[$code] ??= $airport;
+                    }
+                }
+            }
+
+            return array_slice(array_values($airports), 0, 12);
         } catch (\Throwable $e) {
             Log::warning('agentcars suggest failed', ['error' => $e->getMessage()]);
 
             return [];
         }
+    }
+
+    private function fetchRaw(string $query): ?array
+    {
+        $res = Http::timeout(10)->get("{$this->baseUrl}/api/suggest", [
+            'q' => $query,
+            'locale' => 'es',
+            'type' => 'cars',
+        ]);
+
+        return $res->successful() ? ($res->json() ?? []) : null;
+    }
+
+    /** @return array<string, array{code:string,name:string,lat:float,lng:float}> keyed by airport code */
+    private function extractAirports(array $raw): array
+    {
+        $out = [];
+
+        foreach (($raw['airport'] ?? []) as $a) {
+            $code = $a['airport_code'] ?? null;
+
+            if (filled($code)) {
+                $out[$code] = [
+                    'code' => $code,
+                    'name' => $a['name'],
+                    'lat' => $a['lat'],
+                    'lng' => $a['lng'],
+                ];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Decide which extra search terms (if any) to fan out to AgentCars in
+     * order to resolve non-airport queries (countries, cities without a
+     * direct airport match) into real, bookable airport locations.
+     *
+     * @return array<int, string>
+     */
+    private function extraTermsFor(array $raw): array
+    {
+        $countryCode = collect($raw['country'] ?? [])->first()['country_code'] ?? null;
+
+        if ($countryCode && isset(self::COUNTRY_AIRPORT_TERMS[$countryCode])) {
+            return self::COUNTRY_AIRPORT_TERMS[$countryCode];
+        }
+
+        if (filled($raw['airport'] ?? null)) {
+            return [];
+        }
+
+        // Ni país reconocido ni aeropuerto directo: intenta con los nombres
+        // de ciudad/lugar que AgentCars sí reconoció, para no dejar la
+        // búsqueda vacía (ej. barrios, puntos de interés, estaciones).
+        $segmentIndexByType = [
+            'city' => 0,
+            'neighborhood' => 1,
+            'point_of_interest' => 1,
+            'metro_station' => 1,
+            'bus_station' => 1,
+            'train_station' => 1,
+        ];
+
+        $terms = [];
+
+        foreach ($segmentIndexByType as $type => $idx) {
+            foreach (($raw[$type] ?? []) as $item) {
+                $parts = array_map('trim', explode(',', (string) ($item['name'] ?? '')));
+                $term = $parts[$idx] ?? $parts[0] ?? null;
+
+                if (filled($term)) {
+                    $terms[] = $term;
+                }
+            }
+        }
+
+        return collect($terms)->unique()->take(4)->all();
     }
 
     /**
