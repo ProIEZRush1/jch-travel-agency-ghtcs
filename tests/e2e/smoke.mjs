@@ -95,7 +95,7 @@ async function testWebhook() {
 // ── 5. Protected routes redirect unauthenticated users ────────────────────────
 
 async function testProtectedRoutes() {
-    const routes = ['/dashboard', '/autos', '/hoteles', '/paquetes', '/clientes', '/cotizaciones', '/conectar'];
+    const routes = ['/dashboard', '/paquetes', '/clientes', '/cotizaciones', '/conectar'];
     for (const path of routes) {
         const res = await get(path);
         if (res.status === 302) {
@@ -108,7 +108,17 @@ async function testProtectedRoutes() {
     }
 }
 
-// ── 6. Public assets ──────────────────────────────────────────────────────────
+// ── 6. Autos & Hoteles are public (no login required) ────────────────────────
+
+async function testPublicSearchPages() {
+    for (const path of ['/autos', '/hoteles']) {
+        const res = await get(path);
+        if (res.status === 200) ok(`${path}: public, HTTP 200 (no login required)`);
+        else fail(`${path}: expected HTTP 200, got ${res.status}`);
+    }
+}
+
+// ── 7. Public assets ──────────────────────────────────────────────────────────
 
 async function testAssets() {
     const res = await get('/brand-logo.jpeg');
@@ -127,6 +137,7 @@ async function main() {
     await testLoginPage();
     await testRootRedirect();
     await testProtectedRoutes();
+    await testPublicSearchPages();
     await testAssets();
     await testWebhook();
 
