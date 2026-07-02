@@ -1,5 +1,5 @@
-Hoteles ahora consulta EN VIVO tu cuenta de Expedia TAAP en cada búsqueda: nombres, precios e imágenes reales, nunca inventados (ya quitamos el catálogo de precios de prueba que tenía antes).
+Sobre el "¿Eres un robot?" de Expedia: NO lo forzamos a pasar. Ese aviso es una protección de seguridad de Expedia contra accesos automáticos, y saltarla con trucos técnicos podría violar las reglas de tu cuenta de agente — así que en vez de eso hicimos que el sistema lo detecte y te avise honestamente ("Expedia está pidiendo una verificación de seguridad") en lugar de quedarse en un error genérico o inventar hoteles.
 
-Cómo verlo: entra a "/hoteles" (menú "🏨 Hoteles"), escribe un destino, fechas y adultos, y presiona "Buscar hoteles". Para que muestre resultados reales necesitamos tu usuario y contraseña de expediataap.mx — en cuanto nos los compartas los conectamos de forma segura al servidor. Mientras tanto, la página es honesta: dice "Estamos consultando tarifas en vivo, intenta de nuevo en un momento" en lugar de mostrar precios falsos.
+Cómo verlo: entra a "/hoteles", busca un destino y fechas. Si Expedia muestra esa verificación en ese momento, verás el aviso claro (no precios falsos) y el botón "Ir a Expedia TAAP" para cotizar ahí directo mientras se resuelve.
 
-Autos y el acceso a vuelos/paquetes por tu portal Expedia TAAP siguen igual que antes.
+Recomendación: pide a tu ejecutivo de cuenta en Expedia TAAP acceso oficial por API o que agregue nuestro servidor a su lista blanca — es la forma correcta y estable de evitar ese aviso, no un bypass por código.

@@ -13,6 +13,13 @@
 // This script NEVER invents a hotel or a price: on any failure it prints
 // {success:false, error:"..."} and the PHP caller is responsible for surfacing an honest
 // "couldn't connect right now" message instead of fabricating results.
+//
+// If Expedia serves its anti-bot challenge (recaptcha/hcaptcha/"activa la casilla") this
+// script reports it honestly as error:"bot_check" — it does NOT attempt to evade, spoof, or
+// auto-solve it. That challenge is Expedia's own control against scripted access; defeating it
+// is a ToS/legal problem for JCH, not something to route around in code. If this starts firing
+// regularly, the real fix is asking the Expedia TAAP account rep for official API/whitelist
+// access, not stealthier automation.
 
 import { chromium } from 'playwright';
 import fs from 'node:fs';
@@ -34,6 +41,21 @@ async function looksLoggedOut(page) {
     if (/\/(login|logon|signin)/i.test(url)) return true;
 
     return (await page.locator('input[type="password"]').count()) > 0;
+}
+
+// We do NOT try to defeat this — no stealth plugins, no fingerprint spoofing, no auto-clicking
+// the checkbox. Expedia shows this specifically to block scripted access; if we hit it, the
+// honest thing is to say so (a distinct error code) rather than pretend the search just failed.
+async function looksLikeBotCheck(page) {
+    const hasChallengeFrame = (await page
+        .locator('iframe[src*="recaptcha"], iframe[title*="challenge" i], iframe[src*="hcaptcha"], iframe[src*="perimeterx" i], iframe[src*="px-cdn" i]')
+        .count()) > 0;
+    if (hasChallengeFrame) return true;
+
+    const bodyText = await page.locator('body').innerText().catch(() => '');
+    return /activa la casilla|verifica que no eres un robot|verify you are human|are you a robot|unusual traffic|actividad inusual|acceso denegado.*seguridad/i.test(
+        bodyText,
+    );
 }
 
 async function login(browser, baseUrl, user, pass) {
@@ -62,6 +84,11 @@ async function login(browser, baseUrl, user, pass) {
         page.waitForLoadState('networkidle', { timeout: NAV_TIMEOUT_MS }).catch(() => {}),
         submit.click(),
     ]);
+
+    if (await looksLikeBotCheck(page)) {
+        await context.close();
+        throw new Error('bot_check');
+    }
 
     if (await looksLoggedOut(page)) {
         await context.close();
@@ -197,6 +224,10 @@ async function main() {
 
         log('navigating to', searchUrl);
         await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS });
+
+        if (await looksLikeBotCheck(page)) {
+            throw new Error('bot_check');
+        }
 
         if (await looksLoggedOut(page)) {
             // Session was valid a moment ago but TAAP bounced us to login anyway (expired

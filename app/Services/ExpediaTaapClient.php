@@ -70,6 +70,21 @@ class ExpediaTaapClient
             $payload = json_decode($result->output(), true);
 
             if (! is_array($payload) || ($payload['success'] ?? false) !== true) {
+                $error = is_array($payload) ? (string) ($payload['error'] ?? '') : '';
+
+                if (str_contains($error, 'bot_check')) {
+                    // Expedia served its anti-bot challenge. We deliberately do not try to
+                    // defeat it (no stealth automation, no auto-solving) — see
+                    // scripts/expedia-taap-search.mjs. Surface this honestly so the client
+                    // knows to request official API/whitelist access from their Expedia rep
+                    // instead of getting a generic "try again" forever.
+                    Log::warning('expedia taap: blocked by anti-bot challenge, not attempting to bypass it', [
+                        'destino' => $destino, 'checkin' => $checkin, 'checkout' => $checkout,
+                    ]);
+
+                    return $this->unavailable('Expedia está pidiendo una verificación de seguridad en este momento. Nuestro equipo ya lo sabe; mientras tanto usa el botón "Ir a Expedia TAAP" más abajo para cotizar directamente.');
+                }
+
                 Log::warning('expedia taap: scraper reported failure', [
                     'stdout' => $result->output(),
                     'stderr' => $result->errorOutput(),
