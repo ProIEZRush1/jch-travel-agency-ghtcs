@@ -16,7 +16,7 @@ function money(n, currency) {
     <Head title="Historial de Búsquedas — Autos" />
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-bold text-slate-800">🚗 Historial de Búsquedas — Autos (AgentCars)</h2>
+            <h2 class="text-xl font-bold text-slate-800">🚗 Historial de Búsquedas — Autos</h2>
         </template>
 
         <div class="mx-auto max-w-6xl space-y-6">
@@ -25,7 +25,7 @@ function money(n, currency) {
                     <p class="text-sm text-slate-500">
                         Cada vez que un cliente busca autos en la página pública
                         <Link href="/autos" class="font-medium text-teal-700 hover:underline">/autos</Link>
-                        se guarda aquí junto con las cotizaciones que devolvió AgentCars.
+                        se guarda aquí junto con las cotizaciones que devolvió el proveedor.
                     </p>
                 </div>
 

@@ -50,8 +50,8 @@ const statCards = computed(() => [
 ]);
 
 const quickLinks = [
-    { label: 'Renta de Autos', desc: 'AgentCars — busca y cotiza autos', href: '/autos', icon: '🚗' },
-    { label: 'Hoteles & Vuelos', desc: 'Expedia TAAP — tarifa de agente', href: '/hoteles', icon: '✈️' },
+    { label: 'Renta de Autos', desc: 'Busca y cotiza autos', href: '/autos', icon: '🚗' },
+    { label: 'Hoteles & Vuelos', desc: 'Tarifa de agente', href: '/hoteles', icon: '✈️' },
     { label: 'Servicios & Paquetes', desc: 'Gestiona el catálogo del bot', href: '/paquetes', icon: '📦' },
     { label: 'Cotizaciones', desc: 'Solicitudes de clientes por WhatsApp', href: '/cotizaciones', icon: '📋' },
     { label: 'Clientes', desc: 'Base de contactos registrados', href: '/clientes', icon: '👥' },

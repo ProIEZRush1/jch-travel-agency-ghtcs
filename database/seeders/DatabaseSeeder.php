@@ -30,13 +30,13 @@ class DatabaseSeeder extends Seeder
             [
                 'nombre' => 'Renta de Auto',
                 'precio' => 80000,
-                'descripcion' => 'Autos económicos, SUV y premium con AgentCars. Desde $800 MXN/día.',
+                'descripcion' => 'Autos económicos, SUV y premium. Desde $800 MXN/día.',
                 'orden' => 1,
             ],
             [
                 'nombre' => 'Hotel + Vuelo',
                 'precio' => 450000,
-                'descripcion' => 'Tarifa de agente Expedia TAAP — hasta 30% más bajo que precio público.',
+                'descripcion' => 'Tarifa de agente — hasta 30% más bajo que precio público.',
                 'orden' => 2,
             ],
             [

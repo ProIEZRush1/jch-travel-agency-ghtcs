@@ -149,7 +149,7 @@ function onImgError(e) {
             <div class="mx-auto max-w-6xl">
                 <p class="text-sm font-semibold uppercase tracking-wide text-teal-300">JCH Travel Agency</p>
                 <h1 class="mt-1 text-2xl font-bold sm:text-3xl">Encuentra el mejor hotel para tu viaje</h1>
-                <p class="mt-1 text-sm text-blue-100">Tarifas de agente en vivo, consultadas directo desde tu portal Expedia TAAP.</p>
+                <p class="mt-1 text-sm text-blue-100">Tarifas de agente en vivo, consultadas directo desde nuestros proveedores.</p>
 
                 <!-- Search card -->
                 <div class="mt-6 rounded-2xl bg-white p-4 text-slate-800 shadow-xl sm:p-6">
@@ -225,12 +225,12 @@ function onImgError(e) {
         <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
             <div v-if="!searched" class="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
                 <p class="text-4xl">🏨</p>
-                <p class="mt-2 font-medium">Elige destino, fechas y número de adultos para ver tarifas de agente en vivo desde tu portal Expedia TAAP.</p>
+                <p class="mt-2 font-medium">Elige destino, fechas y número de adultos para ver tarifas de agente en vivo.</p>
             </div>
 
             <div v-else-if="loading" class="rounded-xl border border-slate-200 bg-white p-10 text-center text-slate-500">
                 <p class="text-3xl">⏳</p>
-                <p class="mt-2 font-medium">Estamos consultando tarifas en vivo con tu proveedor Expedia TAAP…</p>
+                <p class="mt-2 font-medium">Estamos consultando tarifas en vivo con nuestros proveedores…</p>
                 <p class="mt-1 text-xs text-slate-400">Esto puede tardar unos segundos porque iniciamos sesión y buscamos en tiempo real.</p>
             </div>
 
@@ -286,7 +286,7 @@ function onImgError(e) {
                                 <div class="flex items-end justify-between gap-2">
                                     <div>
                                         <p v-if="h.precio_noche_texto" class="text-xs text-slate-400">{{ h.precio_noche_texto }} / noche</p>
-                                        <p class="text-xs text-slate-400">Total ({{ noches }} noches, tarifa de agente TAAP)</p>
+                                        <p class="text-xs text-slate-400">Total ({{ noches }} noches, tarifa de agente)</p>
                                         <p class="text-xl font-bold text-slate-900">{{ h.precio_total_texto || 'Consulta precio' }}</p>
                                     </div>
                                     <a
@@ -305,17 +305,17 @@ function onImgError(e) {
             </div>
         </section>
 
-        <!-- Vuelos y paquetes vía Expedia TAAP -->
+        <!-- Vuelos y paquetes vía portal de agente -->
         <section class="mx-auto max-w-6xl px-4 pb-10 sm:px-6">
             <div class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
                 <h3 class="text-lg font-bold text-slate-800">✈️ ¿Buscas vuelos o paquetes?</h3>
                 <p class="mt-2 text-sm text-slate-500">
-                    Accede a tu portal Expedia TAAP con tarifa de agente para vuelos y paquetes armados.
+                    Accede a tu portal de agente con tarifa preferencial para vuelos y paquetes armados.
                 </p>
 
                 <div v-if="trialLocked" class="mx-auto mt-6 max-w-md rounded-lg border border-amber-200 bg-amber-50 p-4">
                     <p class="text-sm font-semibold text-amber-800">🔒 Acceso disponible al confirmar tu proyecto</p>
-                    <p class="mt-1 text-xs text-amber-700">Al activar el sistema se conecta directamente con tu portal Expedia TAAP.</p>
+                    <p class="mt-1 text-xs text-amber-700">Al activar el sistema se conecta directamente con tu portal de agente.</p>
                 </div>
                 <a
                     v-else
@@ -324,7 +324,7 @@ function onImgError(e) {
                     rel="noopener noreferrer"
                     class="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#003580] px-8 py-3 text-sm font-bold text-white transition hover:bg-[#0071c2]"
                 >
-                    Ir a Expedia TAAP
+                    Ir a mi portal de agente
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>

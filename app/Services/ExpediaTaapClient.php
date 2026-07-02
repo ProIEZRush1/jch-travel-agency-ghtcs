@@ -82,7 +82,7 @@ class ExpediaTaapClient
                         'destino' => $destino, 'checkin' => $checkin, 'checkout' => $checkout,
                     ]);
 
-                    return $this->unavailable('Expedia está pidiendo una verificación de seguridad en este momento. Nuestro equipo ya lo sabe; mientras tanto usa el botón "Ir a Expedia TAAP" más abajo para cotizar directamente.');
+                    return $this->unavailable('Tu proveedor está pidiendo una verificación de seguridad en este momento. Nuestro equipo ya lo sabe; mientras tanto usa el botón "Ir a mi portal de agente" más abajo para cotizar directamente.');
                 }
 
                 Log::warning('expedia taap: scraper reported failure', [
@@ -104,7 +104,7 @@ class ExpediaTaapClient
                     'destino' => $destino, 'checkin' => $checkin, 'checkout' => $checkout,
                 ]);
 
-                return $this->unavailable('Tu proveedor Expedia TAAP no encontró hoteles para ese destino y esas fechas. Intenta con otro destino o rango.');
+                return $this->unavailable('Tu proveedor no encontró hoteles para ese destino y esas fechas. Intenta con otro destino o rango.');
             }
 
             return [
