@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'JCH Travel Agency'),
+    'name' => 'JCH Travel Agency',
 
     /*
     |--------------------------------------------------------------------------
