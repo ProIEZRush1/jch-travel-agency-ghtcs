@@ -8,7 +8,7 @@ class ExampleTest extends TestCase
 {
     public function test_the_application_returns_a_successful_response(): void
     {
-        // Root '/' redirects to /dashboard (then to /login for guests)
-        $this->get('/')->assertRedirect();
+        // Root '/' is the public JCH Travel Agency landing page.
+        $this->get('/')->assertOk();
     }
 }

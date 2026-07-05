@@ -1,151 +1,268 @@
 <script setup>
-import { ref } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 
-const props = defineProps({ site: Object })
-const s = props.site
-const cart = ref(0)
-const subscribed = ref(false)
-const menuOpen = ref(false)
-const waLink = `https://wa.me/${s.built_by_whatsapp}`
+const WHATSAPP = '5215594356241';
+const waLink = `https://wa.me/${WHATSAPP}`;
+
+const page = usePage();
+const businessName = computed(() => page.props.name ?? 'JCH Travel Agency');
+const isAuth = computed(() => !!page.props.auth?.user);
+const trialLocked = computed(() => page.props.trialLocked ?? false);
+
+const menuOpen = ref(false);
+
+const servicios = [
+    {
+        icon: '🚗',
+        title: 'Renta de Autos',
+        text: 'Compara en vivo tarifas de más de 50 compañías de renta en cualquier ciudad o aeropuerto.',
+        cta: 'Buscar autos',
+        href: '/autos',
+        external: false,
+    },
+    {
+        icon: '🏨',
+        title: 'Hoteles',
+        text: 'Tarifas de agente reales, consultadas en tiempo real — nunca precios de catálogo.',
+        cta: 'Buscar hoteles',
+        href: '/hoteles',
+        external: false,
+    },
+    {
+        icon: '✈️',
+        title: 'Vuelos',
+        text: 'Accede a tu portal de agente para cotizar vuelos con tarifa preferencial en cientos de aerolíneas.',
+        cta: 'Ir a mi portal de agente',
+        href: 'https://www.expediataap.mx',
+        external: true,
+    },
+    {
+        icon: '🧳',
+        title: 'Paquetes',
+        text: 'Arma vuelo + hotel + auto en un solo paquete y comparamos contra la tarifa normal al público.',
+        cta: 'Ir a mi portal de agente',
+        href: 'https://www.expediataap.mx',
+        external: true,
+    },
+];
+
+const testimonios = [
+    {
+        nombre: 'Familia Reyes',
+        texto: 'Nos ayudaron a armar todo el viaje a Cancún — auto, hotel y vuelos — y pagamos menos de lo que habíamos visto en otras páginas. Todo por WhatsApp, súper fácil.',
+    },
+    {
+        nombre: 'Grupo empresarial Torres & Asociados',
+        texto: 'Cotizan rápido y nos muestran claramente cuánto estamos ahorrando contra la tarifa normal. Ya es nuestra agencia de cabecera para viajes de trabajo.',
+    },
+    {
+        nombre: 'Marisol G.',
+        texto: 'Excelente atención, me mandaron la cotización con todo bien explicado y reservé mi auto de renta en minutos.',
+    },
+];
 </script>
 
 <template>
-  <Head :title="`${s.business} — ${s.tagline}`" />
-  <div class="page" :style="{ '--primary': s.theme.primary, '--accent': s.theme.accent }">
-    <header class="nav">
-      <div class="wrap nav__inner">
-        <a href="#top" class="brand">{{ s.business }}</a>
-        <nav class="nav__links" :class="{ open: menuOpen }">
-          <a v-for="n in s.nav" :key="n" href="#" @click="menuOpen=false">{{ n }}</a>
-        </nav>
-        <div class="nav__actions">
-          <button class="cart">🛍️ {{ cart }}</button>
-          <button class="burger" @click="menuOpen=!menuOpen">☰</button>
-        </div>
-      </div>
-    </header>
+    <Head :title="`${businessName} — Autos, Hoteles, Vuelos y Paquetes`" />
 
-    <section id="top" class="hero">
-      <div class="wrap hero__inner">
-        <div>
-          <p class="eyebrow">{{ s.hero.eyebrow }}</p>
-          <h1>{{ s.hero.title }}</h1>
-          <p class="lead">{{ s.hero.subtitle }}</p>
-          <a href="#prod" class="btn">{{ s.hero.cta }}</a>
-          <div class="stats">
-            <div v-for="st in s.stats" :key="st.label"><strong>{{ st.value }}</strong><span>{{ st.label }}</span></div>
-          </div>
-        </div>
-        <div class="hero__photo" :style="{ backgroundImage: `url(${s.hero.image})` }"></div>
-      </div>
-    </section>
+    <div class="min-h-screen bg-slate-50 text-slate-800">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+            <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+                <a href="#top" class="flex items-center gap-3">
+                    <img src="/brand-logo.jpeg" :alt="businessName" class="h-12 w-auto object-contain" />
+                </a>
 
-    <section class="strip"><div class="wrap strip__inner"><span v-for="t in s.strip" :key="t">{{ t }}</span></div></section>
+                <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
+                    <a href="/autos" class="hover:text-[#003580]">🚗 Autos</a>
+                    <a href="/hoteles" class="hover:text-[#003580]">🏨 Hoteles</a>
+                    <a href="https://www.expediataap.mx" target="_blank" rel="noopener" class="hover:text-[#003580]">✈️ Vuelos y Paquetes</a>
+                    <a href="#testimonios" class="hover:text-[#003580]">Testimonios</a>
+                    <a href="#contacto" class="hover:text-[#003580]">Contacto</a>
+                </nav>
 
-    <section id="prod" class="section">
-      <div class="wrap">
-        <h2 class="center">{{ s.products_title }}</h2>
-        <div class="grid">
-          <article v-for="p in s.products" :key="p.seed" class="card">
-            <div class="card__img" :style="{ backgroundImage: `url(https://picsum.photos/seed/${p.seed}/400/520)` }">
-              <span v-if="p.tag" class="tag">{{ p.tag }}</span>
+                <div class="hidden items-center gap-3 lg:flex">
+                    <a :href="waLink" target="_blank" rel="noopener" class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700">
+                        💬 WhatsApp
+                    </a>
+                    <Link v-if="isAuth" href="/dashboard" class="rounded-lg border border-[#003580] px-4 py-2 text-sm font-bold text-[#003580] hover:bg-[#003580] hover:text-white">
+                        Ir al panel
+                    </Link>
+                    <Link v-else href="/login" class="rounded-lg border border-[#003580] px-4 py-2 text-sm font-bold text-[#003580] hover:bg-[#003580] hover:text-white">
+                        Iniciar sesión
+                    </Link>
+                </div>
+
+                <button class="text-2xl lg:hidden" @click="menuOpen = !menuOpen">☰</button>
             </div>
-            <div class="card__body">
-              <h3>{{ p.name }}</h3>
-              <div class="price">{{ p.price }}</div>
-              <button class="add" @click="cart++">Agregar 🛍️</button>
+
+            <div v-if="menuOpen" class="border-t border-slate-200 bg-white px-4 py-3 lg:hidden">
+                <div class="flex flex-col gap-3 text-sm font-medium text-slate-600">
+                    <a href="/autos" class="hover:text-[#003580]">🚗 Autos</a>
+                    <a href="/hoteles" class="hover:text-[#003580]">🏨 Hoteles</a>
+                    <a href="https://www.expediataap.mx" target="_blank" rel="noopener" class="hover:text-[#003580]">✈️ Vuelos y Paquetes</a>
+                    <a href="#testimonios" class="hover:text-[#003580]">Testimonios</a>
+                    <a href="#contacto" class="hover:text-[#003580]">Contacto</a>
+                    <a :href="waLink" target="_blank" rel="noopener" class="rounded-lg bg-teal-600 px-4 py-2 text-center font-bold text-white">💬 WhatsApp</a>
+                    <Link v-if="isAuth" href="/dashboard" class="rounded-lg border border-[#003580] px-4 py-2 text-center font-bold text-[#003580]">Ir al panel</Link>
+                    <Link v-else href="/login" class="rounded-lg border border-[#003580] px-4 py-2 text-center font-bold text-[#003580]">Iniciar sesión</Link>
+                </div>
             </div>
-          </article>
-        </div>
-      </div>
-    </section>
+        </header>
 
-    <section class="section alt">
-      <div class="wrap about">
-        <div class="about__img" :style="{ backgroundImage: `url(${s.about.image})` }"></div>
-        <div>
-          <h2>{{ s.about.title }}</h2>
-          <p class="muted">{{ s.about.text }}</p>
-          <ul class="ticks"><li v-for="pt in s.about.points" :key="pt">{{ pt }}</li></ul>
-        </div>
-      </div>
-    </section>
+        <!-- Hero -->
+        <section id="top" class="border-b border-slate-200 bg-gradient-to-b from-[#003580] to-[#0a4faa] px-4 py-16 text-white sm:px-6">
+            <div class="mx-auto max-w-4xl text-center">
+                <p class="text-sm font-semibold uppercase tracking-wide text-teal-300">{{ businessName }}</p>
+                <h1 class="mt-2 text-3xl font-extrabold sm:text-5xl">Tu agencia de viajes de confianza</h1>
+                <p class="mx-auto mt-4 max-w-2xl text-base text-blue-100 sm:text-lg">
+                    Autos, hoteles, vuelos y paquetes con tarifa de agente — te mostramos cuánto ahorras contra la tarifa normal al público.
+                </p>
 
-    <section class="news">
-      <div class="wrap">
-        <h2>{{ s.contact.title }}</h2>
-        <p>{{ s.contact.text }}</p>
-        <form v-if="!subscribed" @submit.prevent="subscribed=true" class="news__form">
-          <input type="email" placeholder="tu@correo.com" required>
-          <button class="btn light">Suscribirme</button>
-        </form>
-        <p v-else class="ok">¡Listo! Bienvenido al club. 🎉</p>
-      </div>
-    </section>
+                <div class="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+                    <a href="/autos" class="flex flex-col items-center gap-2 rounded-2xl bg-white/10 p-5 backdrop-blur transition hover:bg-white/20">
+                        <span class="text-3xl">🚗</span>
+                        <span class="text-sm font-semibold">Autos</span>
+                    </a>
+                    <a href="/hoteles" class="flex flex-col items-center gap-2 rounded-2xl bg-white/10 p-5 backdrop-blur transition hover:bg-white/20">
+                        <span class="text-3xl">🏨</span>
+                        <span class="text-sm font-semibold">Hoteles</span>
+                    </a>
+                    <a href="https://www.expediataap.mx" target="_blank" rel="noopener" class="flex flex-col items-center gap-2 rounded-2xl bg-white/10 p-5 backdrop-blur transition hover:bg-white/20">
+                        <span class="text-3xl">✈️</span>
+                        <span class="text-sm font-semibold">Vuelos</span>
+                    </a>
+                    <a href="https://www.expediataap.mx" target="_blank" rel="noopener" class="flex flex-col items-center gap-2 rounded-2xl bg-white/10 p-5 backdrop-blur transition hover:bg-white/20">
+                        <span class="text-3xl">🧳</span>
+                        <span class="text-sm font-semibold">Paquetes</span>
+                    </a>
+                </div>
+            </div>
+        </section>
 
-    <footer class="footer">
-      <div class="wrap">
-        <div class="brand light">{{ s.business }}</div>
-        <p>{{ s.tagline }} · Hecho en México 🇲🇽</p>
-        <p class="credit">
-          Desarrollado por <a :href="waLink" target="_blank" rel="noopener">Overcloud</a> · ¿Quieres tu sitio?
-          <a :href="waLink" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
-        </p>
-      </div>
-    </footer>
-  </div>
+        <!-- Franja de confianza -->
+        <section class="bg-[#171327]/95 bg-slate-900 text-white">
+            <div class="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-10 gap-y-2 px-4 py-3 text-xs font-medium sm:text-sm">
+                <span>💳 Tarifa de agente vs. tarifa normal, siempre a la vista</span>
+                <span>⚡ Cotización rápida por WhatsApp</span>
+                <span>🔒 Reservas seguras</span>
+                <span>🇲🇽 Atención en español</span>
+            </div>
+        </section>
+
+        <!-- Servicios -->
+        <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 class="text-center text-2xl font-bold text-slate-800 sm:text-3xl">Todo lo que necesitas para tu viaje</h2>
+            <p class="mx-auto mt-2 max-w-2xl text-center text-slate-500">
+                Consultamos a nuestros proveedores en tiempo real y comparamos la tarifa de agente contra la tarifa normal, para que veas exactamente cuánto ahorras.
+            </p>
+
+            <div class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <article v-for="s in servicios" :key="s.title" class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                    <span class="text-4xl">{{ s.icon }}</span>
+                    <h3 class="mt-4 text-lg font-bold text-slate-800">{{ s.title }}</h3>
+                    <p class="mt-2 flex-1 text-sm text-slate-500">{{ s.text }}</p>
+
+                    <template v-if="s.external && trialLocked">
+                        <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-center text-xs font-semibold text-amber-800">
+                            🔒 Disponible al activar el proyecto
+                        </div>
+                    </template>
+                    <a
+                        v-else
+                        :href="s.href"
+                        :target="s.external ? '_blank' : undefined"
+                        :rel="s.external ? 'noopener noreferrer' : undefined"
+                        class="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-[#003580] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#0071c2]"
+                    >
+                        {{ s.cta }}
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <!-- Ahorro / comparación -->
+        <section class="border-y border-slate-200 bg-white">
+            <div class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 sm:text-3xl">Siempre sabrás cuánto estás ahorrando</h2>
+                    <p class="mt-4 text-slate-500">
+                        En cada cotización te mostramos la <strong>tarifa de agente</strong> que conseguimos con nuestros proveedores junto a la <strong>tarifa normal</strong> al público, para que veas claramente tu ahorro antes de reservar.
+                    </p>
+                    <ul class="mt-6 space-y-3">
+                        <li class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">✓</span>
+                            <span class="text-sm text-slate-600">Comparativo transparente: tarifa de agente vs. tarifa normal</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">✓</span>
+                            <span class="text-sm text-slate-600">Cotizaciones formales, listas para compartir por WhatsApp</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700">✓</span>
+                            <span class="text-sm text-slate-600">Autos, hoteles, vuelos y paquetes en un solo lugar</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <span class="text-sm font-semibold text-slate-500">Tarifa normal</span>
+                        <span class="text-lg font-bold text-slate-400 line-through">$4,200 MXN</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-3">
+                        <span class="text-sm font-semibold text-[#003580]">Tu tarifa de agente</span>
+                        <span class="text-2xl font-extrabold text-[#003580]">$3,350 MXN</span>
+                    </div>
+                    <div class="mt-4 rounded-lg bg-teal-50 px-4 py-2 text-center text-sm font-bold text-teal-700">
+                        Ahorras $850 MXN en esta cotización
+                    </div>
+                    <p class="mt-3 text-center text-xs text-slate-400">Ejemplo ilustrativo — tu tarifa real depende del destino y las fechas.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonios -->
+        <section id="testimonios" class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 class="text-center text-2xl font-bold text-slate-800 sm:text-3xl">Lo que dicen nuestros clientes</h2>
+            <div class="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <article v-for="t in testimonios" :key="t.nombre" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <p class="text-amber-400">★★★★★</p>
+                    <p class="mt-3 text-sm text-slate-600">“{{ t.texto }}”</p>
+                    <p class="mt-4 text-sm font-bold text-slate-800">{{ t.nombre }}</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Contacto -->
+        <section id="contacto" class="bg-gradient-to-br from-[#003580] to-teal-700 px-4 py-16 text-center text-white sm:px-6">
+            <div class="mx-auto max-w-2xl">
+                <h2 class="text-2xl font-bold sm:text-3xl">¿Listo para tu próximo viaje?</h2>
+                <p class="mt-3 text-blue-100">Escríbenos por WhatsApp y arma tu cotización de autos, hoteles, vuelos o paquetes en minutos.</p>
+                <a
+                    :href="waLink"
+                    target="_blank"
+                    rel="noopener"
+                    class="mt-8 inline-flex items-center gap-2 rounded-lg bg-teal-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-teal-400"
+                >
+                    💬 Cotizar por WhatsApp
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-slate-200 bg-white py-8">
+            <div class="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 text-center sm:px-6">
+                <img src="/brand-logo.jpeg" :alt="businessName" class="h-10 w-auto object-contain" />
+                <p class="text-sm text-slate-500">{{ businessName }} · Autos, Hoteles, Vuelos y Paquetes</p>
+                <p class="text-sm text-slate-500">
+                    Desarrollado por
+                    <a :href="waLink" target="_blank" rel="noopener" class="font-semibold text-teal-700 hover:underline">Overcloud</a>
+                </p>
+                <a :href="waLink" target="_blank" rel="noopener" class="text-sm font-medium text-[#003580] hover:underline">
+                    ¿Quieres tu sitio? Escríbenos por WhatsApp
+                </a>
+            </div>
+        </footer>
+    </div>
 </template>
-
-<style scoped>
-*{box-sizing:border-box}
-.page{font-family:'Poppins',system-ui,Avenir,Helvetica,Arial,sans-serif;color:#171327;line-height:1.55;--primary:#7c3aed;--accent:#db2777}
-.wrap{width:min(1140px,92%);margin:0 auto}
-h1,h2{font-family:Georgia,'Times New Roman',serif;line-height:1.1;margin:0}
-a{text-decoration:none;color:inherit}
-.center{text-align:center;margin-bottom:38px;font-size:34px}
-.btn{display:inline-block;background:var(--primary);color:#fff;padding:13px 28px;border-radius:999px;font-weight:600;border:none;cursor:pointer;transition:.2s}
-.btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
-.btn.light{background:#fff;color:var(--primary)}
-.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #ece9f5}
-.nav__inner{display:flex;align-items:center;justify-content:space-between;height:68px}
-.brand{font-family:Georgia,serif;font-weight:700;font-size:23px;background:linear-gradient(90deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.brand.light{-webkit-text-fill-color:#fff;background:none;color:#fff}
-.nav__links{display:flex;gap:28px}.nav__links a{font-weight:500;color:#3b3550}.nav__links a:hover{color:var(--primary)}
-.nav__actions{display:flex;align-items:center;gap:10px}
-.cart{background:#f6f4fb;border:none;border-radius:999px;padding:9px 15px;font-weight:600;cursor:pointer}
-.burger{display:none;background:none;border:none;font-size:22px;cursor:pointer}
-.hero{background:linear-gradient(180deg,#faf8ff,#fff)}
-.hero__inner{display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center;padding:60px 0}
-.eyebrow{color:var(--primary);font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:13px}
-.hero h1{font-size:56px;margin:12px 0 16px}
-.lead{color:#6b7280;font-size:18px;max-width:440px;margin-bottom:24px}
-.stats{display:flex;gap:32px;margin-top:34px}.stats strong{display:block;font-size:23px;font-family:Georgia,serif}.stats span{color:#6b7280;font-size:13px}
-.hero__photo{height:430px;border-radius:24px;background-size:cover;background-position:center;box-shadow:0 30px 60px rgba(124,58,237,.25)}
-.strip{background:#171327;color:#fff}.strip__inner{display:flex;flex-wrap:wrap;gap:22px;justify-content:space-between;padding:15px 0;font-size:14px;font-weight:500}
-.section{padding:70px 0}.section.alt{background:#f6f4fb}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
-.card{background:#fff;border:1px solid #ece9f5;border-radius:16px;overflow:hidden;transition:.25s}.card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(23,19,39,.1)}
-.card__img{aspect-ratio:4/5;background-size:cover;background-position:center;position:relative}
-.tag{position:absolute;top:12px;left:12px;background:#fff;color:var(--primary);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
-.card__body{padding:15px}.card__body h3{font-size:15px;margin:0 0 4px}.price{color:var(--primary);font-weight:700}
-.add{margin-top:11px;width:100%;border:1px solid #ece9f5;background:#fff;padding:10px;border-radius:10px;font-weight:600;cursor:pointer;transition:.2s}.add:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
-.about{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center}
-.about__img{height:370px;border-radius:24px;background-size:cover;background-position:center;box-shadow:0 24px 50px rgba(23,19,39,.14)}
-.about h2{font-size:32px;margin-bottom:14px}.muted{color:#6b7280;margin-bottom:16px}
-.ticks{list-style:none;padding:0;display:grid;gap:9px}.ticks li{padding-left:28px;position:relative;font-weight:500}.ticks li::before{content:'✓';position:absolute;left:0;width:19px;height:19px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
-.news{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;text-align:center;padding:68px 0}
-.news h2{font-size:32px;margin-bottom:8px}.news p{opacity:.92;margin-bottom:22px}
-.news__form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.news__form input{padding:14px 18px;border-radius:999px;border:none;min-width:270px}
-.ok{font-weight:600;margin-top:14px}
-.footer{background:#171327;color:#cfc9e0;padding:46px 0 30px;text-align:center}
-.footer p{margin:8px 0;font-size:14px;opacity:.85}
-.footer .credit a{color:#fff;font-weight:600;text-decoration:underline}
-@media(max-width:860px){
-  .nav__links{position:fixed;inset:68px 0 auto 0;background:#fff;flex-direction:column;padding:16px 6%;gap:14px;border-bottom:1px solid #ece9f5;transform:translateY(-130%);transition:.3s}
-  .nav__links.open{transform:translateY(0)}.burger{display:block}
-  .hero__inner{grid-template-columns:1fr;text-align:center}.hero h1{font-size:42px}.lead,.stats{margin-inline:auto}.stats{justify-content:center}
-  .hero__photo{height:320px;max-width:380px;margin:0 auto}
-  .grid{grid-template-columns:repeat(2,1fr)}.about{grid-template-columns:1fr}
-}
-</style>

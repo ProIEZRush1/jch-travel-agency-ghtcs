@@ -13,7 +13,7 @@ use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => redirect()->route('dashboard'));
+Route::get('/', fn () => Inertia::render('Home'))->name('home');
 
 Route::get('/health', function () {
     try {
