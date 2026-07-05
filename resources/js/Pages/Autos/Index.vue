@@ -287,7 +287,7 @@ function swapDropoff() {
                     </div>
 
                     <div class="mt-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-                        <p class="text-xs text-slate-500">✅ Todas las tarifas mostradas incluyen <strong>Protección Total</strong>, sin sorpresas al recoger tu auto.</p>
+                        <p class="text-xs text-slate-500">✅ Te mostramos siempre la mejor protección disponible para tu auto, sin sorpresas al recoger tu auto.</p>
                         <button
                             type="button"
                             @click="buscar"

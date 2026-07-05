@@ -15,7 +15,22 @@ use Illuminate\Support\Facades\Log;
  */
 class AgentCarsClient
 {
-    private const FULL_PROTECTION_ALIAS = 'Full Protection';
+    /**
+     * AgentCars doesn't sell "Full Protection" on every route/company — many
+     * searches (confirmed against the live agency feed) only have "Basic
+     * Protection" or "Just Car" rates available. Requiring an exact "Full
+     * Protection" match discarded every single offer on those searches and
+     * showed "no autos disponibles" even though the route had 100+ real,
+     * bookable cars. We now rank tiers and keep the best one actually on
+     * offer for each car instead of hiding it entirely.
+     *
+     * @var array<string, int>
+     */
+    private const PROTECTION_RANK = [
+        'Full Protection' => 0,
+        'Basic Protection' => 1,
+        'Just Car' => 2,
+    ];
 
     /**
      * AgentCars' /api/suggest only returns "airport" entries for terms that
@@ -228,14 +243,33 @@ class AgentCarsClient
                 return ['success' => false, 'offers' => []];
             }
 
-            $offers = [];
+            /** @var array<string, array<string,mixed>> $bestByCar */
+            $bestByCar = [];
+
             foreach ($matrix as $categoryOffers) {
                 foreach ((array) $categoryOffers as $offer) {
-                    if (($offer['rateInfo']['alias'] ?? null) !== self::FULL_PROTECTION_ALIAS) {
+                    $alias = $offer['rateInfo']['alias'] ?? null;
+                    $rank = self::PROTECTION_RANK[$alias] ?? PHP_INT_MAX;
+                    $price = (float) ($offer['rateAmount'] ?? 0);
+
+                    // One entry per physical car offering (same category, company and
+                    // model), keeping whichever protection tier ranks best; ties broken
+                    // by price so we still show the cheapest option at that tier.
+                    $carKey = implode('|', [
+                        $offer['category'] ?? '',
+                        $offer['companyCode'] ?? $offer['companyName'] ?? '',
+                        $offer['carModel'] ?? '',
+                    ]);
+
+                    $current = $bestByCar[$carKey] ?? null;
+
+                    if ($current !== null && ($current['_rank'] < $rank || ($current['_rank'] === $rank && $current['_price'] <= $price))) {
                         continue;
                     }
 
-                    $offers[] = [
+                    $bestByCar[$carKey] = [
+                        '_rank' => $rank,
+                        '_price' => $price,
                         'categoria' => $offer['category'] ?? '',
                         'compania' => $offer['companyName'] ?? '',
                         'compania_logo' => $offer['companyImg'] ?? null,
@@ -247,7 +281,7 @@ class AgentCarsClient
                         'maletas' => $offer['bags'] ?? null,
                         'aire_acondicionado' => $offer['air'] ?? null,
                         'km_incluidos' => $offer['km_included'] ?? null,
-                        'precio' => (float) ($offer['rateAmount'] ?? 0),
+                        'precio' => $price,
                         'moneda' => $offer['currency'] ?? 'USD',
                         'dias' => $offer['days'] ?? null,
                         'proteccion' => $offer['rateInfo']['name'] ?? 'Protección Total',
@@ -257,6 +291,12 @@ class AgentCarsClient
                     ];
                 }
             }
+
+            $offers = array_values(array_map(function ($offer) {
+                unset($offer['_rank'], $offer['_price']);
+
+                return $offer;
+            }, $bestByCar));
 
             usort($offers, fn ($a, $b) => $a['precio'] <=> $b['precio']);
 
