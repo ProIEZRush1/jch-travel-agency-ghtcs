@@ -43,7 +43,7 @@ const waLink = `https://wa.me/${WHATSAPP}`;
             <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex items-center gap-2 border-b border-slate-100 px-4 py-3 text-sm text-slate-500">
                     <span>🚗</span>
-                    <span>Busca y compara autos de renta al instante — motor de nuestro proveedor AgentCars.</span>
+                    <span>Busca y compara autos de renta al instante con JCH Travel Agency.</span>
                 </div>
                 <iframe src="https://subsite.agentcars.com/es/site/form-iframe?agency=archer-operadora" width="100%" height="600" style="border:0"></iframe>
             </div>
