@@ -10,7 +10,7 @@ const waLink = `https://wa.me/${WHATSAPP}`;
 
     <div class="min-h-screen bg-slate-50 text-slate-800">
         <!-- Header -->
-        <header class="border-b border-slate-200 bg-white">
+        <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
             <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
                 <a href="/autos" class="flex items-center gap-3">
                     <img src="/brand-logo.jpeg" alt="JCH Travel Agency" class="h-12 w-auto object-contain" />
