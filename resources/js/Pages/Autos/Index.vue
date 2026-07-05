@@ -39,8 +39,10 @@ const loading = ref(false);
 const searched = ref(false);
 const results = ref([]);
 const errorMsg = ref('');
+const noOffersFound = ref(false);
 const sortBy = ref('precio');
 const categoryFilter = ref('todas');
+const searchCardRef = ref(null);
 
 let pickupTimer = null;
 let dropoffTimer = null;
@@ -103,6 +105,7 @@ async function buscar() {
     loading.value = true;
     searched.value = true;
     errorMsg.value = '';
+    noOffersFound.value = false;
     results.value = [];
     categoryFilter.value = 'todas';
 
@@ -124,7 +127,8 @@ async function buscar() {
         if (data.success && data.ofertas?.length) {
             results.value = data.ofertas;
         } else if (data.success) {
-            errorMsg.value = 'No encontramos autos disponibles para esas fechas y lugar. Intenta con otra búsqueda.';
+            noOffersFound.value = true;
+            errorMsg.value = 'No encontramos autos disponibles para esas fechas y ese lugar. La disponibilidad cambia todo el tiempo: prueba con otras fechas, otra hora o un lugar cercano.';
         } else {
             errorMsg.value = 'No pudimos completar la búsqueda en este momento. Intenta de nuevo en unos minutos.';
         }
@@ -133,6 +137,16 @@ async function buscar() {
     } finally {
         loading.value = false;
     }
+}
+
+function modificarBusqueda() {
+    searchCardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function probarOtrasFechas() {
+    pickupDate.value = addDays(pickupDate.value, 3);
+    dropoffDate.value = addDays(dropoffDate.value, 3);
+    buscar();
 }
 
 const categories = computed(() => {
@@ -200,7 +214,7 @@ function swapDropoff() {
                 <p class="mt-1 text-sm text-blue-100">Comparamos en vivo las tarifas de más de 50 compañías de renta — Dollar, Thrifty, Hertz, Enterprise y más.</p>
 
                 <!-- Search card -->
-                <div class="mt-6 rounded-2xl bg-white p-4 text-slate-800 shadow-xl sm:p-6">
+                <div ref="searchCardRef" class="mt-6 rounded-2xl bg-white p-4 text-slate-800 shadow-xl sm:p-6">
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         <!-- Lugar de recogida -->
                         <div class="relative lg:col-span-2">
@@ -314,8 +328,33 @@ function swapDropoff() {
                 <p class="mt-2 font-medium">Comparando tarifas con nuestros proveedores…</p>
             </div>
 
-            <div v-else-if="errorMsg" class="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-red-700">
-                {{ errorMsg }}
+            <div v-else-if="errorMsg" class="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center text-amber-800">
+                <p class="text-3xl">{{ noOffersFound ? '🔎' : '⚠️' }}</p>
+                <p class="mt-2 font-medium">{{ errorMsg }}</p>
+                <div v-if="noOffersFound" class="mt-5 flex flex-col items-center justify-center gap-2 sm:flex-row">
+                    <button
+                        type="button"
+                        @click="probarOtrasFechas"
+                        class="rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700"
+                    >
+                        📅 Probar 3 días después
+                    </button>
+                    <button
+                        type="button"
+                        @click="modificarBusqueda"
+                        class="rounded-lg border border-amber-300 bg-white px-5 py-2.5 text-sm font-bold text-amber-800 shadow-sm transition hover:bg-amber-100"
+                    >
+                        ✏️ Modificar búsqueda
+                    </button>
+                </div>
+                <a
+                    :href="waLink"
+                    target="_blank"
+                    rel="noopener"
+                    class="mt-4 block text-sm font-medium text-[#003580] hover:underline"
+                >
+                    ¿Buscas algo específico? Escríbenos por WhatsApp y te ayudamos a encontrarlo
+                </a>
             </div>
 
             <div v-else>
